@@ -21,6 +21,10 @@ func NewServer(m *http.ServeMux, cSvc *customers.Service) *Server {
 	return &Server{mux: m, customerSvc: cSvc}
 }
 
+func (s *Server)ServeHTTP(w http.ResponseWriter, r *http.Request){
+	s.mux.ServeHTTP(w,r)
+}
+
 //Init ...
 func (s *Server) Init() {
 	s.mux.HandleFunc("/customers.getById", s.handleGetCustomerByID)
