@@ -166,7 +166,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 	item := &Customer{}
 
 	if customer.ID == 0 {
-		sqlStatement := `insert into customers(name, phone) values($1, $2)`
+		sqlStatement := `insert into customers(name, phone) values($1, $2) returning *`
 		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
 			&item.ID,
 			&item.Name,
@@ -174,7 +174,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 			&item.Active,
 			&item.Created)
 	} else {
-		sqlStatement := `update customers set name=$1, phone=$2 where id=$3`
+		sqlStatement := `update customers set name=$1, phone=$2 where id=$3 returning *`
 		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
 			&item.ID,
 			&item.Name,
@@ -183,9 +183,6 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 			&item.Created)
 	}
 
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	}
 	if err != nil {
 		log.Print(err)
 		return nil, ErrInternal
