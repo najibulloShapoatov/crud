@@ -65,7 +65,7 @@ func (s *Service) All(ctx context.Context) (cs []*Customer, err error) {
 //AllActive ....
 func (s *Service) AllActive(ctx context.Context) (cs []*Customer, err error) {
 
-	sqlStatement := `select * from customers where active=1`
+	sqlStatement := `select * from customers where active=true`
 
 	rows, err := s.db.QueryContext(ctx, sqlStatement)
 	if err != nil {
@@ -90,7 +90,6 @@ func (s *Service) AllActive(ctx context.Context) (cs []*Customer, err error) {
 
 	return cs, nil
 }
-
 
 //ByID ...
 func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
@@ -162,19 +161,19 @@ func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 }
 
 //Save ...
-func (s *Service) Save(ctx context.Context, customer *Customer)(c *Customer, err error){
+func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, err error) {
 
 	item := &Customer{}
-	
-	if customer.ID==0 {
+
+	if customer.ID == 0 {
 		sqlStatement := `insert into customers(name, phone) values($1, $2)`
-		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone ).Scan(
+		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,
 			&item.Active,
 			&item.Created)
-	}else{
+	} else {
 		sqlStatement := `update customers set name=$1, phone=$2 where id=$3`
 		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
 			&item.ID,
