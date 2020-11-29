@@ -36,6 +36,7 @@ type Customer struct {
 //All ....
 func (s *Service) All(ctx context.Context) (cs []*Customer, err error) {
 
+	//это наш sql запрос
 	sqlStatement := `select * from customers`
 
 	rows, err := s.db.QueryContext(ctx, sqlStatement)
@@ -65,6 +66,7 @@ func (s *Service) All(ctx context.Context) (cs []*Customer, err error) {
 //AllActive ....
 func (s *Service) AllActive(ctx context.Context) (cs []*Customer, err error) {
 
+	//это наш sql запрос
 	sqlStatement := `select * from customers where active=true`
 
 	rows, err := s.db.QueryContext(ctx, sqlStatement)
@@ -95,7 +97,9 @@ func (s *Service) AllActive(ctx context.Context) (cs []*Customer, err error) {
 func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
 	item := &Customer{}
 
+	//это наш sql запрос
 	sqlStatement := `select * from customers where id=$1`
+	//выполняем запрос к базу
 	err := s.db.QueryRowContext(ctx, sqlStatement, id).Scan(
 		&item.ID,
 		&item.Name,
@@ -103,9 +107,11 @@ func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
 		&item.Active,
 		&item.Created)
 
+	//если sql нам не вернул резултат
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
+	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
 	if err != nil {
 		log.Print(err)
 		return nil, ErrInternal
@@ -118,17 +124,20 @@ func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
 func (s *Service) ChangeActive(ctx context.Context, id int64, active bool) (*Customer, error) {
 	item := &Customer{}
 
+	//это наш sql запрос
 	sqlStatement := `update customers set active=$2 where id=$1 returning *`
+	//выполняем запрос к базу
 	err := s.db.QueryRowContext(ctx, sqlStatement, id, active).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
 		&item.Active,
 		&item.Created)
-
+	//если sql нам не вернул резултат
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
+	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
 	if err != nil {
 		log.Print(err)
 		return nil, ErrInternal
@@ -141,7 +150,9 @@ func (s *Service) ChangeActive(ctx context.Context, id int64, active bool) (*Cus
 func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 	item := &Customer{}
 
+	//это наш sql запрос
 	sqlStatement := `delete from customers  where id=$1 returning *`
+	//выполняем запрос к базу
 	err := s.db.QueryRowContext(ctx, sqlStatement, id).Scan(
 		&item.ID,
 		&item.Name,
@@ -149,9 +160,11 @@ func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 		&item.Active,
 		&item.Created)
 
+	//если sql нам не вернул резултат
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
+	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
 	if err != nil {
 		log.Print(err)
 		return nil, ErrInternal
@@ -163,18 +176,28 @@ func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 //Save ...
 func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, err error) {
 
+	//обявляем пустую структуру
 	item := &Customer{}
 
+	//если id равно то сделаем инцерт (тоест создаем и веренем только что созданный клиент)
 	if customer.ID == 0 {
+
+		//это наш sql запрос
 		sqlStatement := `insert into customers(name, phone) values($1, $2) returning *`
+
+		//выполняем запрос к базу
 		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,
 			&item.Active,
 			&item.Created)
-	} else {
+
+	} else { //если нет обновляем и вернем обновленный
+
+		//это наш sql запрос
 		sqlStatement := `update customers set name=$1, phone=$2 where id=$3 returning *`
+		//выполняем запрос к базу
 		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
 			&item.ID,
 			&item.Name,
@@ -183,6 +206,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 			&item.Created)
 	}
 
+	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
 	if err != nil {
 		log.Print(err)
 		return nil, ErrInternal
