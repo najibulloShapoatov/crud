@@ -2,7 +2,8 @@ package customers
 
 import (
 	"context"
-	"database/sql"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"errors"
 	"log"
 	"time"
@@ -16,12 +17,12 @@ var ErrInternal = errors.New("internal error")
 
 //Service ..
 type Service struct {
-	db *sql.DB
+	pool *pgxpool.Pool
 }
 
 //NewService ..
-func NewService(db *sql.DB) *Service {
-	return &Service{db: db}
+func NewService(db *pgxpool.Pool) *Service {
+	return &Service{pool: db}
 }
 
 //Customer ...
@@ -39,7 +40,7 @@ func (s *Service) All(ctx context.Context) (cs []*Customer, err error) {
 	//это наш sql запрос
 	sqlStatement := `select * from customers`
 
-	rows, err := s.db.QueryContext(ctx, sqlStatement)
+	rows, err := s.pool.Query(ctx, sqlStatement)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +70,7 @@ func (s *Service) AllActive(ctx context.Context) (cs []*Customer, err error) {
 	//это наш sql запрос
 	sqlStatement := `select * from customers where active=true`
 
-	rows, err := s.db.QueryContext(ctx, sqlStatement)
+	rows, err := s.pool.Query(ctx, sqlStatement)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,7 @@ func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
 	//это наш sql запрос
 	sqlStatement := `select * from customers where id=$1`
 	//выполняем запрос к базу
-	err := s.db.QueryRowContext(ctx, sqlStatement, id).Scan(
+	err := s.pool.QueryRow(ctx, sqlStatement, id).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
@@ -108,7 +109,7 @@ func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
 		&item.Created)
 
 	//если sql нам не вернул резултат
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, ErrNotFound
 	}
 	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
@@ -127,14 +128,14 @@ func (s *Service) ChangeActive(ctx context.Context, id int64, active bool) (*Cus
 	//это наш sql запрос
 	sqlStatement := `update customers set active=$2 where id=$1 returning *`
 	//выполняем запрос к базу
-	err := s.db.QueryRowContext(ctx, sqlStatement, id, active).Scan(
+	err := s.pool.QueryRow(ctx, sqlStatement, id, active).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
 		&item.Active,
 		&item.Created)
 	//если sql нам не вернул резултат
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, ErrNotFound
 	}
 	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
@@ -153,7 +154,7 @@ func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 	//это наш sql запрос
 	sqlStatement := `delete from customers  where id=$1 returning *`
 	//выполняем запрос к базу
-	err := s.db.QueryRowContext(ctx, sqlStatement, id).Scan(
+	err := s.pool.QueryRow(ctx, sqlStatement, id).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
@@ -161,7 +162,7 @@ func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 		&item.Created)
 
 	//если sql нам не вернул резултат
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, ErrNotFound
 	}
 	//проверим ошибку если во время выполнения запросы было какая то ошибка то вернем InternalError
@@ -186,7 +187,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 		sqlStatement := `insert into customers(name, phone) values($1, $2) returning *`
 
 		//выполняем запрос к базу
-		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
+		err = s.pool.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,
@@ -198,7 +199,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 		//это наш sql запрос
 		sqlStatement := `update customers set name=$1, phone=$2 where id=$3 returning *`
 		//выполняем запрос к базу
-		err = s.db.QueryRowContext(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
+		err = s.pool.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,

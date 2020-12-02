@@ -35,6 +35,18 @@ func (s *Server) Init() {
 	s.mux.HandleFunc("/customers.unblockById", s.handleUnBlockByID)
 	s.mux.HandleFunc("/customers.removeById", s.handleDelete)
 	s.mux.HandleFunc("/customers.save", s.handleSave)
+
+	/* 
+	http://127.0.0.1:9999/customers.save?id=0&name=Shahlo&phone=992928015290
+	http://127.0.0.1:9999/customers.save?id=0&name=Najibullo&phone=992931441244
+	http://127.0.0.1:9999/customers.getById?id=1
+	http://127.0.0.1:9999/customers.getAll
+	http://127.0.0.1:9999/customers.getAllActive
+	http://127.0.0.1:9999/customers.blockById?id=1
+	http://127.0.0.1:9999/customers.unblockById?id=1
+	http://127.0.0.1:9999/customers.removeById?id=1
+	
+	*/
 }
 
 // хендлер метод для извлечения всех клиентов
