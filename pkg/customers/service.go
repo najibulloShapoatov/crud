@@ -17,12 +17,12 @@ var ErrInternal = errors.New("internal error")
 
 //Service ..
 type Service struct {
-	pool *pgxpool.Pool
+	db *pgxpool.Pool
 }
 
 //NewService ..
 func NewService(db *pgxpool.Pool) *Service {
-	return &Service{pool: db}
+	return &Service{db: db}
 }
 
 //Customer ...
@@ -36,11 +36,11 @@ type Customer struct {
 
 //All ....
 func (s *Service) All(ctx context.Context) (cs []*Customer, err error) {
-
+ 
 	//это наш sql запрос
 	sqlStatement := `select * from customers`
 
-	rows, err := s.pool.Query(ctx, sqlStatement)
+	rows, err := s.db.Query(ctx, sqlStatement)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (s *Service) AllActive(ctx context.Context) (cs []*Customer, err error) {
 	//это наш sql запрос
 	sqlStatement := `select * from customers where active=true`
 
-	rows, err := s.pool.Query(ctx, sqlStatement)
+	rows, err := s.db.Query(ctx, sqlStatement)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (s *Service) ByID(ctx context.Context, id int64) (*Customer, error) {
 	//это наш sql запрос
 	sqlStatement := `select * from customers where id=$1`
 	//выполняем запрос к базу
-	err := s.pool.QueryRow(ctx, sqlStatement, id).Scan(
+	err := s.db.QueryRow(ctx, sqlStatement, id).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
@@ -128,7 +128,7 @@ func (s *Service) ChangeActive(ctx context.Context, id int64, active bool) (*Cus
 	//это наш sql запрос
 	sqlStatement := `update customers set active=$2 where id=$1 returning *`
 	//выполняем запрос к базу
-	err := s.pool.QueryRow(ctx, sqlStatement, id, active).Scan(
+	err := s.db.QueryRow(ctx, sqlStatement, id, active).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
@@ -154,7 +154,7 @@ func (s *Service) Delete(ctx context.Context, id int64) (*Customer, error) {
 	//это наш sql запрос
 	sqlStatement := `delete from customers  where id=$1 returning *`
 	//выполняем запрос к базу
-	err := s.pool.QueryRow(ctx, sqlStatement, id).Scan(
+	err := s.db.QueryRow(ctx, sqlStatement, id).Scan(
 		&item.ID,
 		&item.Name,
 		&item.Phone,
@@ -187,7 +187,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 		sqlStatement := `insert into customers(name, phone) values($1, $2) returning *`
 
 		//выполняем запрос к базу
-		err = s.pool.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
+		err = s.db.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,
@@ -199,7 +199,7 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 		//это наш sql запрос
 		sqlStatement := `update customers set name=$1, phone=$2 where id=$3 returning *`
 		//выполняем запрос к базу
-		err = s.pool.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
+		err = s.db.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,

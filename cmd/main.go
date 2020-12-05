@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
 	"go.uber.org/dig"
 	"time"
 	"context"
@@ -31,9 +32,10 @@ func main() {
 func execute(host, port, dbConnectionString string) (err error){
 	
 
+	//здес обявляем слайс с зависимостями тоест добавляем все сервисы и конструкторы 
 	dependencies := []interface{}{
 		app.NewServer,
-		http.NewServeMux,
+		mux.NewRouter,
 		func() (*pgxpool.Pool, error){
 			connCtx, _ := context.WithTimeout(context.Background(), time.Second*5)
 			return pgxpool.Connect(connCtx, dbConnectionString)
@@ -48,7 +50,9 @@ func execute(host, port, dbConnectionString string) (err error){
 	}
 
 
+	//обявляем новый контейнер
 	container := dig.New()
+	//в цикле регистрируем все зависимостив контейнер
 	for _, v := range dependencies {
 		err = container.Provide(v)
 		if err !=nil{
@@ -56,13 +60,18 @@ func execute(host, port, dbConnectionString string) (err error){
 		}
 	}
 
+	/*вызываем метод Invoke позволяет вызвать на контейнере функøия, при этом подставит нам в
+параметры тот объект, который нужно "собрать" (именно в ÿтот момент все
+зависимости будут собраны, либо мы полуùим ощибку)*/
 	err = container.Invoke(func(server *app.Server){
 		server.Init()
 	})
+	//если получили ошибку то вернем его
 	if err != nil{
 		return err
 	}
 
+	
 	return container.Invoke(func(server *http.Server) error{
 		return server.ListenAndServe()
 	})
