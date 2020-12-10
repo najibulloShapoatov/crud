@@ -14,17 +14,12 @@ import (
 	"github.com/najibulloShapoatov/crud/pkg/customers"
 )
 
-//406.75
-//4.0675p
-//465p
-
 //Server ...
 type Server struct {
 	mux         *mux.Router
 	customerSvc *customers.Service
 	securitySvc *security.Service
 }
-
 //NewServer ... создает новый сервер
 func NewServer(m *mux.Router, cSvc *customers.Service, sSvc *security.Service) *Server {
 	return &Server{
@@ -33,12 +28,10 @@ func NewServer(m *mux.Router, cSvc *customers.Service, sSvc *security.Service) *
 		securitySvc: sSvc,
 	}
 }
-
 // функция для запуска хендлеров через мукс
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mux.ServeHTTP(w, r)
 }
-
 //Init ... инициализация сервера
 func (s *Server) Init() {
 	//s.mux.HandleFunc("/customers.getById", s.handleGetCustomerByID)
@@ -52,6 +45,7 @@ func (s *Server) Init() {
 	s.mux.HandleFunc("/customers/{id}", s.handleDelete).Methods("DELETE")
 	s.mux.HandleFunc("/customers", s.handleSave).Methods("POST")
 
+	// как показона в лекции оборачиваем все роуты с мидлварем Basic из пакета middleware
 	s.mux.Use(middleware.Basic(s.securitySvc.Auth))
 	
 
