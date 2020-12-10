@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/najibulloShapoatov/crud/pkg/security"
 	"github.com/gorilla/mux"
 	"go.uber.org/dig"
 	"time"
@@ -41,6 +42,7 @@ func execute(host, port, dbConnectionString string) (err error){
 			return pgxpool.Connect(connCtx, dbConnectionString)
 		},
 		customers.NewService,
+		security.NewService,
 		func(server *app.Server)*http.Server{
 			return &http.Server{
 				Addr:host+":"+port,
