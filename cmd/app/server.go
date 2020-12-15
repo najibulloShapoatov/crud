@@ -1,12 +1,15 @@
 package app
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 
 	//"github.com/najibulloShapoatov/crud/cmd/app/middleware"
 	"github.com/najibulloShapoatov/crud/pkg/security"
@@ -250,6 +253,14 @@ func (s *Server) handleSave(w http.ResponseWriter, r *http.Request) {
 		errorWriter(w, http.StatusBadRequest, err)
 		return
 	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(item.Password), bcrypt.DefaultCost)
+	if err != nil {
+		//вызываем фукцию для ответа с ошибкой
+		errorWriter(w, http.StatusInternalServerError, err)
+		return
+	}
+	item.Password = hex.EncodeToString(hashed)
 
 	//сохроняем или обновляем клиент
 	customer, err := s.customerSvc.Save(r.Context(), item)
