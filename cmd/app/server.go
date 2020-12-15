@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/najibulloShapoatov/crud/cmd/app/middleware"
+	//"github.com/najibulloShapoatov/crud/cmd/app/middleware"
 	"github.com/najibulloShapoatov/crud/pkg/security"
 
 	"github.com/gorilla/mux"
@@ -54,7 +54,7 @@ func (s *Server) Init() {
 	s.mux.HandleFunc("/api/customers/token/validate", s.handleValidateToken).Methods("POST")
 
 	// как показона в лекции оборачиваем все роуты с мидлварем Basic из пакета middleware
-	s.mux.Use(middleware.Basic(s.securitySvc.Auth))
+	//s.mux.Use(middleware.Basic(s.securitySvc.Auth))
 
 	/*
 		http://127.0.0.1:9999/customers.save?id=0&name=Najibullo&phone=992931441244
