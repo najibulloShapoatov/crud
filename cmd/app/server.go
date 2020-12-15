@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -260,7 +259,7 @@ func (s *Server) handleSave(w http.ResponseWriter, r *http.Request) {
 		errorWriter(w, http.StatusInternalServerError, err)
 		return
 	}
-	item.Password = hex.EncodeToString(hashed)
+	item.Password = string(hashed)
 
 	//сохроняем или обновляем клиент
 	customer, err := s.customerSvc.Save(r.Context(), item)
