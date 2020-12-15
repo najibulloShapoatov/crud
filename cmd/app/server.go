@@ -389,9 +389,12 @@ func respondJSONWithCode(w http.ResponseWriter, sts int, iData interface{}) {
 		errorWriter(w, http.StatusInternalServerError, err)
 		return
 	}
-	w.WriteHeader(sts)
+
 	//поставить хедер "Content-Type: application/json" в ответе
 	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(sts)
+
 	//пишем ответ
 	_, err = w.Write(data)
 	//если получили ошибку
