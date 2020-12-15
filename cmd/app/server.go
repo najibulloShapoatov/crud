@@ -314,10 +314,10 @@ func (s *Server) handleValidateToken(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		status := http.StatusInternalServerError
-		if err == security.ErrNoSuchUser{
+		if err == security.ErrNoSuchUser {
 			status = http.StatusNotFound
 		}
-		if err == security.ErrExpireToken{
+		if err == security.ErrExpireToken {
 			status = http.StatusBadRequest
 		}
 
@@ -325,8 +325,11 @@ func (s *Server) handleValidateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res := make(map[string]interface{})
+	res["status"] = "ok"
+	res["customerId"] = id
 
-	respondJSONWithCode(w, http.StatusOK, map[string]interface{}{"status": "ok", "customerId": id})
+	respondJSONWithCode(w, http.StatusOK, res)
 }
 
 /*
