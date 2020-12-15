@@ -1,11 +1,12 @@
-.PHONY: build
 
 build:
 	go build ./cmd
 
-.PHONY: run
 
 run:
 	go run ./cmd/main.go
+
+
+.PHONY: run build
 
 .DEFAULT_GOAL := run
