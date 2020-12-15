@@ -35,6 +35,13 @@ func Basic(checkAuth func(string, string)bool) func(handler http.Handler)http.Ha
 	}
 }
 
+
+
+
+
+
+
+
 // это функция который извелекаеть данные из запроса и вернет логин и парол и ошибку если есть ошибка
 func getLoginPass(r *http.Request) (string, string, error){
 		

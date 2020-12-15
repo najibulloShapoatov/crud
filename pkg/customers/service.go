@@ -2,11 +2,12 @@ package customers
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"errors"
 	"log"
 	"time"
+
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 //ErrNotFound ...
@@ -27,16 +28,17 @@ func NewService(db *pgxpool.Pool) *Service {
 
 //Customer ...
 type Customer struct {
-	ID      int64     `json:"id"`
-	Name    string    `json:"name"`
-	Phone   string    `json:"phone"`
-	Active  bool      `json:"active"`
-	Created time.Time `json:"created"`
+	ID       int64     `json:"id"`
+	Name     string    `json:"name"`
+	Phone    string    `json:"phone"`
+	Password string    `json:"password"`
+	Active   bool      `json:"active"`
+	Created  time.Time `json:"created"`
 }
 
 //All ....
 func (s *Service) All(ctx context.Context) (cs []*Customer, err error) {
- 
+
 	//это наш sql запрос
 	sqlStatement := `select * from customers`
 
@@ -184,25 +186,27 @@ func (s *Service) Save(ctx context.Context, customer *Customer) (c *Customer, er
 	if customer.ID == 0 {
 
 		//это наш sql запрос
-		sqlStatement := `insert into customers(name, phone) values($1, $2) returning *`
+		sqlStatement := `insert into customers(name, phone, password) values($1, $2, $3) returning *`
 
 		//выполняем запрос к базу
-		err = s.db.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone).Scan(
+		err = s.db.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone, customer.Password).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,
+			&item.Password,
 			&item.Active,
 			&item.Created)
 
 	} else { //если нет обновляем и вернем обновленный
 
 		//это наш sql запрос
-		sqlStatement := `update customers set name=$1, phone=$2 where id=$3 returning *`
+		sqlStatement := `update customers set name=$1, phone=$2, password=$3 where id=$4 returning *`
 		//выполняем запрос к базу
-		err = s.db.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone, customer.ID).Scan(
+		err = s.db.QueryRow(ctx, sqlStatement, customer.Name, customer.Phone, customer.Password, customer.ID).Scan(
 			&item.ID,
 			&item.Name,
 			&item.Phone,
+			&item.Password,
 			&item.Active,
 			&item.Created)
 	}
