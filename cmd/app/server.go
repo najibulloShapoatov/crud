@@ -313,11 +313,20 @@ func (s *Server) handleValidateToken(w http.ResponseWriter, r *http.Request) {
 	id, err := s.securitySvc.AuthenticateCustomer(r.Context(), item.Token)
 
 	if err != nil {
-		respondJSON(w, map[string]interface{}{"status": "fail", "reason": fmt.Sprintf("%v", err)})
+		status := http.StatusInternalServerError
+		if err == security.ErrNoSuchUser{
+			status = http.StatusNotFound
+		}
+		if err == security.ErrExpireToken{
+			status = http.StatusBadRequest
+		}
+
+		respondJSONWithCode(w, status, map[string]interface{}{"status": "fail", "reason": fmt.Sprintf("%v", err)})
 		return
 	}
 
-	respondJSON(w, map[string]interface{}{"status": "ok", "customerId": id})
+
+	respondJSONWithCode(w, http.StatusOK, map[string]interface{}{"status": "ok", "customerId": id})
 }
 
 /*
