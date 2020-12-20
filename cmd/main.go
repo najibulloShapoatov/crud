@@ -7,11 +7,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/najibulloShapoatov/crud/pkg/managers"
+
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/najibulloShapoatov/crud/cmd/app"
 	"github.com/najibulloShapoatov/crud/pkg/customers"
-	"github.com/najibulloShapoatov/crud/pkg/security"
 	"go.uber.org/dig"
 )
 
@@ -42,7 +43,7 @@ func execute(host, port, dbConnectionString string) (err error) {
 			return pgxpool.Connect(connCtx, dbConnectionString)
 		},
 		customers.NewService, //это сервис клиентов
-		security.NewService,  //это сервис авторизации
+		managers.NewService,  //это сервис менеджеров
 		func(server *app.Server) *http.Server { //это фукция конструктор который принимает *app.Server и вернет *http.Server
 			return &http.Server{
 				Addr:    host + ":" + port,

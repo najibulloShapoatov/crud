@@ -53,31 +53,35 @@ func (s *Service) Auth(login, password string) bool {
 	return true
 }
 
-//TokenForCustomer ....
+//TokenForCustomer .... метод для генерации токена
 func (s *Service) TokenForCustomer(ctx context.Context, phone, password string)(string, error){
 
+	//обявляем переменную хеш и парол
 	var hash string
 	var id int64
-
+	//выполняем запрос и извелекаем ид и хеш пароля  
 	err := s.db.QueryRow(ctx, "select id, password from customers where phone = $1", phone).Scan(&id, &hash)
-
+	//если ничего не получили вернем ErrNoSuchUser
 	if err == pgx.ErrNoRows{
 		return "", ErrNoSuchUser
 	}
+	//если другая ошибка то вернем ErrInternal
 	if err != nil{
 		return "", ErrInternal
 	}
+	//проверим хеш с представленным паролем
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	if err != nil{
 		return "", ErrInvalidPassword
 	}
 
+	//генерируем токен 
 	buffer := make([]byte, 256)
 	n, err := rand.Read(buffer)
 	if n != len(buffer) || err != nil{
 		return "", ErrInternal
 	}
-
+	
 	token := hex.EncodeToString(buffer)
 	_, err = s.db.Exec(ctx, "insert into customers_tokens(token, customer_id) values($1, $2)", token, id)
 	if err != nil{
