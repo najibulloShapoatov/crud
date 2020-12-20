@@ -1,5 +1,5 @@
 
-create table if not customers
+create table if not exists customers
 (
     id bigserial primary key,
     name	text not null,
@@ -9,7 +9,7 @@ create table if not customers
     created timestamp not null default current_timestamp 
 );
 
-create table if not managers 
+create table if not exists managers 
 (
     id bigserial primary key,
     name	text not null,
@@ -24,7 +24,7 @@ create table if not managers
     created timestamp not null default current_timestamp 
 );
 
-create table if not customers_tokens 
+create table if not exists customers_tokens 
 (
     token text not null unique,
     customer_id bigint not null references customers,
@@ -32,7 +32,7 @@ create table if not customers_tokens
     created timestamp not null default current_timestamp
 );
 
-create table if not managers_tokens 
+create table if not exists managers_tokens 
 (
     token text not null unique,
     manager_id bigint not null references managers,
@@ -40,7 +40,7 @@ create table if not managers_tokens
     created timestamp not null default current_timestamp
 );
 
-create table if not products 
+create table if not exists products 
 (
     id      bigserial primary key,
     name    text not null,
@@ -50,7 +50,7 @@ create table if not products
     created timestamp not null default current_timestamp 
 );
 
-create table if not sales 
+create table if not exists sales 
 (
     id          bigserial primary key,
     manager_id  bigint not null references managers,
@@ -58,7 +58,7 @@ create table if not sales
     created     timestamp not null default current_timestamp 
 );
 
-create table if not sales_positions 
+create table if not exists sales_positions 
 (
     id          bigserial primary key,
     product_id  bigint not null references products,
