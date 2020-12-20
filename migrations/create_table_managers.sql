@@ -18,7 +18,7 @@ create table if not exists managers
     boss_id bigint references managers,
     departament text,
     phone 	text 	not null unique,
-    password text 	not null,
+    password text ,
     is_admin boolean not null default true,
     active 	boolean not null default true,
     created timestamp not null default current_timestamp 
